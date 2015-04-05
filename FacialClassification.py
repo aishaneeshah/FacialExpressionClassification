@@ -44,7 +44,7 @@ class ExpressionClassification(Tkinter.Tk):
         
         self.v = Tkinter.IntVar()
         self.v.set(1)  # initializing the choice
-        self.expressions = [("Anger",1),("Fear",2),("Surprise",3),("Sadness",4),("Joy",5),("Disgust",6)]
+        self.expressions = [("Anger",1),("Fear",2),("Surprise",3),("Sadness",4),("Joy",5),("Disgust",6),("No Expression",7)]
         self.textlabel = Tkinter.Label(
               text = """Choose the correct expression""",
               justify = Tkinter.CENTER)
