@@ -24,12 +24,18 @@ class ExpressionClassification(Tkinter.Tk):
         self.parent = parent
         self.store_images = self.data.Image
         self.images = [[int(j) for j in i.split(' ')] for i in self.store_images]
+        self.start = int(start)
         self.initialize()
 
     def initialize(self):
         self.grid()
         tp = Tkinter.Label(self,text="Select the appropriate emotional expression based on the image shown below")
         tp.grid(column=0,row=0,rowspan=2,columnspan=3 )
+        self.imgnostring = Tkinter.StringVar()
+        self.imgnostring.set("")
+        self.imagenumberlabel = Tkinter.Label(self,textvariable = self.imgnostring)
+        self.imagenumberlabel.grid(column = 0, row = 2)
+        
         
         self.startButton = Tkinter.Button(self, text = "Start classifying",command = self.onStart)
         self.startButton.grid(column = 0, columnspan=3, row = 3, sticky = 'e')
@@ -78,7 +84,8 @@ class ExpressionClassification(Tkinter.Tk):
         self.startButton.config(state = Tkinter.DISABLED )
         self.nextButton.config(state = Tkinter.ACTIVE)
         self.imageNo = 0
-#        self.imageLabel.config(Tkinter.PhotoImage("D:\\Semester3\\StatDSP\\Project\\YourIm.gif"))
+        self.imgnostring.set(self.imageNo + self.start)
+        
     def onNext(self):
         self.finalClassification.append(self.v.get())
         self.imageNo += 1  
@@ -93,6 +100,7 @@ class ExpressionClassification(Tkinter.Tk):
         self.imageLabel=Tkinter.Label(self,image=ph)
         self.imageLabel.label = ph
         self.imageLabel.grid(column=0,row=3,columnspan=2,sticky="we")
+        self.imgnostring.set(self.imageNo + self.start)
         self.v.set(1)
         
     def onEnd(self):
