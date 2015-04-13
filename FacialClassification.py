@@ -10,7 +10,7 @@ import Tkinter
 import os
 from sys import argv
 from PIL import Image
-
+import functools
 
 
 class ExpressionClassification(Tkinter.Tk):
@@ -36,7 +36,6 @@ class ExpressionClassification(Tkinter.Tk):
         self.imagenumberlabel = Tkinter.Label(self,textvariable = self.imgnostring)
         self.imagenumberlabel.grid(column = 0, row = 2)
         
-        
         self.startButton = Tkinter.Button(self, text = "Start classifying",command = self.onStart)
         self.startButton.grid(column = 0, columnspan=3, row = 3, sticky = 'e')
         
@@ -47,6 +46,7 @@ class ExpressionClassification(Tkinter.Tk):
         self.imageLabel.label = ph
         self.imageLabel.grid(column=0,row=3,columnspan = 2,sticky="we")
         self.finalClassification = list()
+        self.buttons = list()
         
         self.v = Tkinter.IntVar()
         self.v.set(1)  # initializing the choice
@@ -59,17 +59,17 @@ class ExpressionClassification(Tkinter.Tk):
             return self.v.get
         x = 4
         for txt,val in self.expressions: 
-            self.radioButton = Tkinter.Radiobutton(self,
+            self.expButton = Tkinter.Button(self,
                         text = txt,
-                        variable = self.v,
-                        command = ShowChoice,
-                        value = val)
-            self.radioButton.grid(column=0,row=x+1,sticky="W")
+                        state = Tkinter.ACTIVE,
+                        command = functools.partial(self.onNext, value=val),
+                        width = 20)
+            self.expButton.grid(column=0,row=x+1,sticky="W")
+            self.buttons.append(self.expButton)
             x+=1
-       
 
-        self.nextButton = Tkinter.Button(self,text="Next",state = Tkinter.DISABLED,command = self.onNext)
-        self.nextButton.grid(column=1,row=10)
+        # self.nextButton = Tkinter.Button(self,text="Next",state = Tkinter.DISABLED,command = self.onNext)
+        # self.nextButton.grid(column=1,row=10)
         
         self.endButton = Tkinter.Button(self,text="Done",state = Tkinter.DISABLED, command = self.onEnd)
         self.endButton.grid(column=2,row=10)
@@ -82,15 +82,19 @@ class ExpressionClassification(Tkinter.Tk):
     def onStart(self):
         self.labelVariable.set("")
         self.startButton.config(state = Tkinter.DISABLED )
-        self.nextButton.config(state = Tkinter.ACTIVE)
+        #self.nextButton.config(state = Tkinter.ACTIVE)
         self.imageNo = 0
         self.imgnostring.set(self.imageNo + self.start)
         
-    def onNext(self):
-        self.finalClassification.append(self.v.get())
+    def onNext(self,value):
+        self.finalClassification.append(value)
         self.imageNo += 1  
         if(self.imageNo == self.datapoints):
-            self.nextButton.config(state = Tkinter.DISABLED)
+            #self.nextButton.config(state = Tkinter.DISABLED)
+            
+            for button in self.buttons:
+                button.config(state = Tkinter.DISABLED)
+
             self.endButton.config(state = Tkinter.ACTIVE)
             return
         f = Image.fromarray(np.resize(self.images[self.imageNo],(96,96)))
