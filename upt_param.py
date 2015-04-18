@@ -10,9 +10,11 @@ from pandas.io.parsers import read_csv
 from sklearn.utils import shuffle
 
 # Neural Net Imports
+import theano
+
 from lasagne import layers
 from lasagne.updates import nesterov_momentum
-from nolearn.lasagne import NeuralNet, BatchIterator
+from nolearn.lasagne import NeuralNet
 
 import cPickle as pickle
 
@@ -187,9 +189,6 @@ net4 = NeuralNet(
 
 	update_learning_rate=theano.shared(float32(0.03)),
     update_momentum=theano.shared(float32(0.9)),
-	
-    update_learning_rate=0.01,
-    update_momentum=0.9,
 
     regression=True,
 	on_epoch_finished=[
