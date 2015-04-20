@@ -9,6 +9,7 @@ from sklearn.utils import shuffle
 from lasagne import layers
 from lasagne.updates import nesterov_momentum
 from nolearn.lasagne import NeuralNet
+import pandas as pd
 
 import cPickle as pickle
 
@@ -32,13 +33,21 @@ def load(test=False, cols=None):
         df = df[list(cols) + ['Image']]
 
     print(df.count())  # prints the number of values for each column
-    df = df.dropna()  # drop all rows that have missing values in them
+#    df = df.dropna()  # drop all rows that have missing values in them
 
     X = np.vstack(df['Image'].values) / 255.  # scale pixel values to [0, 1]
     X = X.astype(np.float32)
 
     if not test:  # only FTRAIN has any target columns
-        y = df[df.columns[:-1]].values
+	
+	df1 = pd.DataFrame()
+
+	for i in df.columns:
+		df1[i] = df[i].fillna(df[i].mean(skipna = True))
+
+	df = df1
+
+	y = df[df.columns[:-1]].values
         y = (y - 48) / 48  # scale target coordinates to [-1, 1]
         X, y = shuffle(X, y, random_state=42)  # shuffle train data
         y = y.astype(np.float32)
@@ -71,7 +80,7 @@ net2 = NeuralNet(
     update_momentum=0.9,
 
     regression=True,
-    max_epochs=1000,
+    max_epochs=300,
     verbose=1,
     )
 
@@ -85,7 +94,7 @@ def load2D(test = False, cols = None):
 # print("y.shape == {}; y.min == {:.3f}; y.max == {:.3f}".format(
 #     y.shape, y.min(), y.max()))
 X, y = load2D()
-# net2.fit(X, y)
+net2.fit(X, y)
 
 # with open('net2.pickle', 'wb') as f:
     # pickle.dump(net2, f, -1)
