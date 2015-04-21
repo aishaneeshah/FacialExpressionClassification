@@ -122,7 +122,7 @@ class AdjustVariable(object):
 
     def __call__(self, nn, train_history):
         if self.ls is None:
-            self.ls = np.linspace(self.start, self.stop, 10000)
+            self.ls = np.linspace(self.start, self.stop, nn.max_epochs)
 
         epoch = train_history[-1]['epoch']
         new_value = np.cast['float32'](self.ls[epoch - 1])
@@ -159,6 +159,7 @@ net = NeuralNet(
         ('pool2', MaxPool2DLayer),
         ('conv3', Conv2DLayer),
         ('pool3', MaxPool2DLayer),
+	    ('dropout3', layers.DropoutLayer),
         ('hidden4', layers.DenseLayer),
         ('dropout4', layers.DropoutLayer),
         ('hidden5', layers.DenseLayer),
@@ -169,6 +170,7 @@ net = NeuralNet(
     conv1_num_filters=32, conv1_filter_size=(3, 3), pool1_ds=(2, 2),
     conv2_num_filters=64, conv2_filter_size=(2, 2), pool2_ds=(2, 2),
     conv3_num_filters=128, conv3_filter_size=(2, 2), pool3_ds=(2, 2),
+    dropout3_p=0.5,
     hidden4_num_units=1000,
     dropout4_p=0.5,
     hidden5_num_units=1000,
@@ -179,31 +181,34 @@ net = NeuralNet(
 
     regression=True,
     batch_iterator_train=FlipBatchIterator(batch_size=128),
-    max_epochs=500,
+    on_epoch_finished=[
+        AdjustVariable('update_learning_rate', start=0.03, stop=0.0001),
+        AdjustVariable('update_momentum', start=0.9, stop=0.999),
+        EarlyStopping(patience=200),
+        ],
+    max_epochs=1000,
     verbose=1,
     )
 
 X, y = load2d()
-NETSAVE = './data/net.pickle'
+PREVNET = './data/net_final.pickle'
+SAVESTATE = './data/save_netstate.pickle'
 
 try:
-	with open(NETSAVE, 'rb') as f:
-		net = pickle.load(f)
+    f = open(PREVNET, 'rb')
+	net_prev = pickle.load(f)
+    print "Continuing"
+    net_state = net_prev.__getstate__()
+    f = open(SAVESTATE, 'wb')
+    pickle.dump(net_state, f, -1)
+    print "Saved State"
 
-	print "Continuing from {} iterations".format(net.max_epochs)
-	net.on_epoch_finished=[
-        AdjustVariable('update_learning_rate', start=np.update_learning_rate, stop=0.0001),
-	    AdjustVariable('update_momentum', start=np.update_momentum, stop=0.999),
-    	EarlyStopping(patience=200),
-    	]
 except:
 	print "Starting for first time"
-	net.on_epoch_finished=[
-	    AdjustVariable('update_learning_rate', start=0.03, stop=0.0001),
-	    AdjustVariable('update_momentum', start=0.9, stop=0.999),
-	    EarlyStopping(patience=200),
-	    ]
 
-net.fit(X, y)
-with open(NETSAVE, 'wb') as f:
-	pickle.dump(net, f, -1)
+# print net.train_history_[-1]['valid_loss']
+# print net.train_history_[-1]['train_loss']
+
+# net.fit(X, y)
+# with open(NETSAVE, 'a+b') as f:
+# 	pickle.dump(net, f, -1)
